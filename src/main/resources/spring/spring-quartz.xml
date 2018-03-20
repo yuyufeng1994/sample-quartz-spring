@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xmlns:context="http://www.springframework.org/schema/context" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+    <description>spring任务调度，quartz任务调度</description>
+
+    <import resource="spring-dao.xml"/>
+
+    <bean name="quartzScheduler"
+          class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="dataSource">
+            <ref bean="dataSource" />
+        </property>
+        <property name="applicationContextSchedulerContextKey" value="applicationContextKey" />
+        <property name="configLocation" value="classpath:quartz.properties" />
+        <property name="autoStartup" value="true" />
+        <property name="startupDelay" value="2" />
+        <property name="overwriteExistingJobs" value="true" />
+        <property name="triggers">
+            <list>
+                <ref bean="myTrigger" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="myJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+        <property name="jobClass" value="top.yuyufeng.sample.job.MyJob"/>
+        <property name="name" value="DemoJob"/>
+        <property name="durability" value="true"/>
+        <!--再次启动或集群中其他机器接手任务时会尝试恢复执行之前未完成的所有任务。-->
+        <property name="requestsRecovery" value="true" />
+    </bean>
+
+    <bean id="myTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="myJob"/>
+        <property name="cronExpression" value="0/2 * * * * ?"/>
+    </bean>
+
+</beans>
